@@ -27,7 +27,6 @@ jobs:
           name: LIGHTmed-standalone-apk
           path: app/build/outputs/apk/debug/app-debug.apk
       - name: Decode Keystore & Build Signed Play Store AAB
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         env:
           KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
           KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
@@ -37,7 +36,6 @@ jobs:
           echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/signing.keystore"
           KEYSTORE_PATH="$RUNNER_TEMP/signing.keystore" gradle bundleRelease --no-daemon
       - name: Upload Signed Play Store AAB
-        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
         uses: actions/upload-artifact@v4
         with:
           name: LIGHTmed-playstore-aab

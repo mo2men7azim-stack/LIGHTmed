@@ -1,8 +1,10 @@
-name: Build LIGHTmed Native APK
+name: Build LIGHTmed APK & Play Store AAB
+
 on:
   push:
     branches: [ main, master ]
   workflow_dispatch:
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -15,11 +17,28 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Unzip and Build APK
-        run: |
-          unzip -o lightmed_standalone_apk.zip
-          gradle assembleDebug --no-daemon
-      - uses: actions/upload-artifact@v4
+      - name: Unzip Standalone Project
+        run: unzip -o lightmed_standalone_apk.zip
+      - name: Build Debug APK
+        run: gradle assembleDebug --no-daemon
+      - name: Upload Debug APK
+        uses: actions/upload-artifact@v4
         with:
-          name: LIGHTmed-native-apk
+          name: LIGHTmed-standalone-apk
           path: app/build/outputs/apk/debug/app-debug.apk
+      - name: Decode Keystore & Build Signed Play Store AAB
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          echo "$KEYSTORE_BASE64" | base64 -d > "$RUNNER_TEMP/signing.keystore"
+          KEYSTORE_PATH="$RUNNER_TEMP/signing.keystore" gradle bundleRelease --no-daemon
+      - name: Upload Signed Play Store AAB
+        if: ${{ secrets.KEYSTORE_BASE64 != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: LIGHTmed-playstore-aab
+          path: app/build/outputs/bundle/release/app-release.aab

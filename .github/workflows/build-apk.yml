@@ -17,7 +17,7 @@ jobs:
           gradle-version: '8.7'
       - name: Unzip and Build APK
         run: |
-          unzip -o lightmed_android_native.zip
+          unzip -o lightmed_standalone_apk.zip
           gradle assembleDebug --no-daemon
       - uses: actions/upload-artifact@v4
         with:

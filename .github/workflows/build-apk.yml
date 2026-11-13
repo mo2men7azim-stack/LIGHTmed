@@ -17,8 +17,11 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: '8.7'
-      - name: Unzip Standalone Project
-        run: unzip -o lightmed_standalone_apk.zip
+      - name: Unzip & Bundle Offline Tailwind CSS
+        run: |
+          unzip -o lightmed_standalone_apk.zip
+          curl -fsSL https://cdn.tailwindcss.com/3.4.17 -o app/src/main/assets/www/tailwind.js
+          sed -i 's|https://cdn.tailwindcss.com/3.4.17|tailwind.js|g' app/src/main/assets/www/index.html
       - name: Build Debug APK
         run: gradle assembleDebug --no-daemon
       - name: Upload Debug APK
